@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Orbital Insight | FDO Dashboard</title>
+    <style>
+        :root {
+            --bg-primary: #0F172A; /* Rich dark blue [cite: 12] */
+            --accent-emerald: #10B981; /* Desaturated emerald [cite: 17] */
+            --glass: rgba(30, 41, 59, 0.7);
+        }
+        body { 
+            margin: 0; background-color: var(--bg-primary); 
+            color: #F8FAFC; font-family: 'Inter', sans-serif; overflow: hidden;
+        }
+        header {
+            position: absolute; top: 0; width: 100%; height: 60px;
+            background: var(--glass); backdrop-filter: blur(10px); /* Glassmorphism [cite: 30] */
+            display: flex; align-items: center; padding: 0 20px; z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        #main-container { display: grid; grid-template-columns: 1fr 350px; height: 100vh; }
+        
+        /* FIX 1: The Grid Wrapper sits behind the canvas */
+        #map-viewport { 
+            position: relative; overflow: hidden; 
+            background-image: linear-gradient(to right, #1E293B 1px, transparent 1px), 
+                              linear-gradient(to bottom, #1E293B 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        canvas { display: block; }
+        
+        #sidebar { background: rgba(15, 23, 42, 0.9); border-left: 1px solid rgba(255,255,255,0.1); padding: 80px 20px 20px; }
+        .module-card { background: rgba(30, 41, 59, 0.5); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .skeleton { background: #1E293B; animation: pulse 1.5s infinite; } /* [cite: 4] */
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.8; } }
+    </style>
+</head>
+<body>
+    <header>
+        <h2 style="color: var(--accent-emerald); margin: 0; font-size: 1.2rem;">ORBITAL INSIGHT</h2>
+    </header>
+    <div id="main-container">
+        <div id="map-viewport">
+            <canvas id="groundTrackCanvas"></canvas>
+        </div>
+        <div id="sidebar">
+            <div class="module-card">
+                <h3>Conjunction Bullseye</h3>
+                <canvas id="bullseyeCanvas" width="310" height="300"></canvas>
+            </div>
+            <div class="module-card">
+                <h3>Fleet Health</h3>
+                <div id="fuel-gauge" class="skeleton" style="height: 100px;"></div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  acm-engine:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: orbital-acm-node
+    ports:
+      - "8000:8000"
+    environment:
+      - WORKERS=4
+      - PORT=8000
+    # Demonstrating Billion-Scale efficiency by capping resources
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+        reservations:
+          memory: 256M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/state"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
