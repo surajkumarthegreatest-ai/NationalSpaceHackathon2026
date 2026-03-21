@@ -3,7 +3,7 @@
  */
 
 const {DeckGL, ScatterplotLayer, OrbitView} = deck;
-
+    
 // Initialization: DeckGL Container
 const deckgl = new DeckGL({
     container: 'map-viewport',

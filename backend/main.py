@@ -43,18 +43,18 @@ class TickRequest(BaseModel):
 PHYSICS_LOCK = asyncio.Lock()
 ACTIVE_BUFFER_INDEX = 0
 
-# Downcast to float32 for SIMD acceleration and cache-line doubling
+# Downcast reversed: Back to float64 to prevent UFuncTypeError
 DOUBLE_BUFFERS = [
-    np.zeros((FLEET_SIZE, 6), dtype=np.float32),
-    np.zeros((FLEET_SIZE, 6), dtype=np.float32)
+    np.zeros((FLEET_SIZE, 6), dtype=np.float64),
+    np.zeros((FLEET_SIZE, 6), dtype=np.float64)
 ]
 
 K_BUFFERS = {
-    'k1': np.zeros((FLEET_SIZE, 6), dtype=np.float32),
-    'k2': np.zeros((FLEET_SIZE, 6), dtype=np.float32),
-    'k3': np.zeros((FLEET_SIZE, 6), dtype=np.float32),
-    'k4': np.zeros((FLEET_SIZE, 6), dtype=np.float32),
-    'temp': np.zeros((FLEET_SIZE, 6), dtype=np.float32)
+    'k1': np.zeros((FLEET_SIZE, 6), dtype=np.float64),
+    'k2': np.zeros((FLEET_SIZE, 6), dtype=np.float64),
+    'k3': np.zeros((FLEET_SIZE, 6), dtype=np.float64),
+    'k4': np.zeros((FLEET_SIZE, 6), dtype=np.float64),
+    'temp': np.zeros((FLEET_SIZE, 6), dtype=np.float64)
 }
 
 def run_physics_batch(incoming_states: np.ndarray, dt: float, steps: int, write_idx: int) -> np.ndarray:
@@ -85,12 +85,12 @@ def run_physics_batch(incoming_states: np.ndarray, dt: float, steps: int, write_
 
 
 @app.post("/api/tick")
-@limiter.limit("5/second") # SECURITY FIX: Volumetric DoS Protection
+@limiter.limit("5/second") 
 async def process_tick(request: Request, payload: TickRequest):
     global ACTIVE_BUFFER_INDEX
     
-    # Ingest directly as float32
-    data = np.array(payload.states, dtype=np.float32)
+    # Change float32 to float64 here
+    data = np.array(payload.states, dtype=np.float64)
     
     if data.shape[0] > FLEET_SIZE:
         raise HTTPException(status_code=400, detail="Payload exceeds configured FLEET_SIZE.")
@@ -115,7 +115,6 @@ async def process_tick(request: Request, payload: TickRequest):
     conjunction_pairs = detect_conjunctions(
         future_states[:, :3], 
         threshold_km=COLLISION_THRESHOLD_KM,
-        leafsize=50 
     )
 
     if not conjunction_pairs:
@@ -155,7 +154,7 @@ async def process_tick(request: Request, payload: TickRequest):
         valid_burns = delta_vs[valid_mask]
         
         maneuvers = [
-            {"satellite_id": sid, "burn_vector_eci": burn}
+            {"satellite_id": int(sid), "burn_vector_eci": burn.tolist()}
             for sid, burn in zip(valid_sat_ids, valid_burns)
         ]
 
